@@ -5,40 +5,44 @@
 //事实上上面这个问题还是值得思考一下的
 //man 7 pipe之后，看到了unidirectional，懂？
 //还有关于读/写条件的问题，看了手册之后也比单纯地扣书本上的定义要清晰的多m，内心也要安定的多kk
+//
+//ok ,事实证明一个pipe完全够用了，read所做的工作不仅仅是read，它是“读取”，会让pipe的缓冲区的n内容-1
+//
 int main(void)
 {
-    int pipe_1[2];
-    int pipe_2[2];
-    pipe(pipe_1);
-    pipe(pipe_2);
+    int Pipe[2];
+    pipe(Pipe);
     char buf[2];
     int pid = fork();
     if (pid == 0) {
         
         //step 2
-        read(pipe_1[0], buf, 1);//知道pipe_1的write端关闭它才会执行
+        read(Pipe[0], buf, 1);//知道pipe_1的write端关闭它才会执行
         printf("child receive %c\n", *buf);
 
         //s 3
         printf("child receive ping\n");
-        write(pipe_2[1], "b", 1);
-        close(pipe_2[1]);
+        write(Pipe[1], "b", 1);
+        close(Pipe[1]);
 
 
     }
     else {
-        //step1,父进程写1byte至pipe_1
-        
-        write(pipe_1[1], "a", 1);
-        close(pipe_1[1]);
         
 
-        //s 4
+       //由于子进程read在前面，所以b父进程的write先执行
+       write(Pipe[1],"a",1);
+      close(Pipe[1]);
+//      wait(0);
+
+      read(Pipe[0],buf,1);
+  printf("parent receive %c\n", *buf);
+
+
+      printf("parent receive pong\n");
+
+
         
-        
-        read(pipe_2[0], buf, 1);//直到pipe_2的write端关闭它才会执行
-        printf("parent receive %c\n", *buf);
-        printf("child receive pong\n");
 
     }
 
