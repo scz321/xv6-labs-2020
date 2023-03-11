@@ -33,7 +33,7 @@ int main(void)
        //由于子进程read在前面，所以b父进程的write先执行
        write(Pipe[1],"a",1);
       close(Pipe[1]);
-//      wait(0);
+      wait(0);
 
       read(Pipe[0],buf,1);
   printf("parent receive %c\n", *buf);
